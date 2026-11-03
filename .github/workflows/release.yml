@@ -21,7 +21,7 @@ jobs:
           # Trusted publishing needs npm 11.5.1 or later, which Node 24 ships.
           node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: npm
+          # No dependency cache: this job can publish, so it never restores a cache another workflow wrote.
       - name: Check the tag matches package.json
         run: |
           tag="${GITHUB_REF_NAME#v}"
