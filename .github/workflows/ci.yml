@@ -27,3 +27,13 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Check the bundle is under 1 KB gzipped, as the README says
+        run: |
+          size="$(gzip -c dist/index.js | wc -c)"
+          echo "dist/index.js is $size bytes gzipped."
+          if [ "$size" -gt 1024 ]; then
+            echo "dist/index.js is over 1024 bytes gzipped." >&2
+            exit 1
+          fi
+      - name: Lint the package as npm will see it
+        run: npx --yes publint
