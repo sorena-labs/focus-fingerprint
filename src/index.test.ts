@@ -88,6 +88,26 @@ describe("find", () => {
     expect(find(print, draw("<p></p>"))).toBeUndefined();
   });
 
+  it("refuses a disabled element, which cannot take focus", () => {
+    const root = draw("<fieldset><button>Open</button></fieldset>");
+    const button = root.querySelector("button")!;
+    const print = fingerprint(button, root);
+    button.disabled = true;
+    expect(find(print, root)).toBeUndefined();
+    button.disabled = false;
+    root.firstElementChild!.setAttribute("disabled", "");
+    expect(find(print, root)).toBeUndefined();
+    draw("<fieldset><button disabled>Open</button></fieldset>", root);
+    expect(find(print, root)).toBeUndefined();
+  });
+
+  it("keeps an aria-disabled element, which can still take focus", () => {
+    const root = draw("<button>Open</button>");
+    const print = fingerprint(root.firstElementChild, root);
+    draw('<button aria-disabled="true">Open</button>', root);
+    expect(find(print, root)).toBe(root.firstElementChild);
+  });
+
   it("returns undefined when the element is gone", () => {
     const root = draw("<button>Open</button>");
     const print = fingerprint(root.firstElementChild, root);
