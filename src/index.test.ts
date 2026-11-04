@@ -43,6 +43,24 @@ describe("find", () => {
     expect(find(print, root)).toBe(root.lastElementChild);
   });
 
+  it("finds the id inside root when an earlier element outside it has the same id", () => {
+    draw('<button id="x">Open</button>');
+    const root = draw('<p></p><button id="x">Open</button>');
+    const print = fingerprint(root.lastElementChild, root);
+    draw('<button id="x">Open</button><p></p>', root);
+    expect(find(print, root)).toBe(root.firstElementChild);
+  });
+
+  it("finds a replaced element by its id inside a shadow root", () => {
+    const shadow = draw("").attachShadow({ mode: "open" });
+    const root = document.createElement("div");
+    shadow.append(root);
+    draw('<button id="x">Open</button>', root);
+    const print = fingerprint(root.firstElementChild, root);
+    draw('<p></p><button id="x">Open</button>', root);
+    expect(find(print, root)).toBe(root.lastElementChild);
+  });
+
   it("finds a replaced element in a new root", () => {
     const old = draw("<section><a href='#'>Next</a></section>");
     const print = fingerprint(old.querySelector("a"), old);

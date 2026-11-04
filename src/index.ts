@@ -25,6 +25,14 @@ const label = (el: Element) => (el.getAttribute("aria-label") ?? el.textContent 
 const usable = (el: Element | null | undefined, root: Element): el is HTMLElement | SVGElement =>
   !!el && el.isConnected && root.contains(el) && !el.closest("[inert], [aria-hidden='true']");
 
+const byId = (root: Element, id: string) => {
+  if (!root.isConnected) return undefined; // Nothing in it is usable.
+  const hit = (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+  if (!hit || root.contains(hit)) return hit ?? undefined;
+  // The id is used earlier, outside root. Compared directly, so it needs no escaping.
+  for (const el of root.querySelectorAll("[id]")) if (el.id === id) return el;
+};
+
 /**
  * Records an element inside root: the element itself, its id, its index path from root, its tag and its name.
  * Undefined when there is no element, or it is root itself, or it is not inside root.
@@ -33,7 +41,12 @@ export function fingerprint(el: Element | null | undefined, root: Element | null
   if (!el || !root || el === root || !root.contains(el)) return undefined;
   const nameOf = options.name ?? label;
   const path: number[] = [];
-  for (let at = el; at !== root; at = at.parentElement!) path.unshift([...at.parentElement!.children].indexOf(at));
+  for (let at = el; at !== root; at = at.parentElement!) {
+    let i = 0;
+    for (let s = at.previousElementSibling; s; s = s.previousElementSibling) i++;
+    path.push(i);
+  }
+  path.reverse();
   const print: Print = { el, id: el.id, path, tag: el.tagName, name: nameOf(el), nameOf };
   return print as unknown as Fingerprint;
 }
@@ -48,9 +61,9 @@ export function find(print: Fingerprint | undefined, root: Element | null | unde
   if (!p || !root) return undefined;
   if (usable(p.el, root)) return p.el;
   const same = (el: Element | null | undefined) => (el && el.tagName === p.tag && p.nameOf(el) === p.name && usable(el, root) ? el : undefined);
-  // Compared directly, so an id needs no escaping, and only ids inside root count.
-  const byId = p.id ? [...root.querySelectorAll("[id]")].find((el) => el.id === p.id) : undefined;
+  const hit = p.id ? same(byId(root, p.id)) : undefined;
+  if (hit) return hit;
   let at: Element | undefined = root;
   for (const i of p.path) at = at?.children[i];
-  return same(byId) ?? same(at);
+  return same(at);
 }
