@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { find, fingerprint } from "./index";
+import { find, fingerprint, restore } from "./index";
 
 const draw = (html: string, root = document.createElement("div")) => {
   root.innerHTML = html;
@@ -256,5 +256,65 @@ describe("find", () => {
     const print = fingerprint(root.firstElementChild, root, { name });
     draw('<button data-key="save">Saved</button>', root);
     expect(find(print, root)).toBe(root.firstElementChild);
+  });
+});
+
+describe("restore", () => {
+  const selection = (el: Element | null) => {
+    const { selectionStart, selectionEnd, selectionDirection } = el as HTMLInputElement;
+    return [selectionStart, selectionEnd, selectionDirection];
+  };
+
+  it("focuses a replaced input and puts back its caret and selection", () => {
+    const root = draw('<input value="hello world">');
+    (root.firstElementChild as HTMLInputElement).setSelectionRange(2, 5, "backward");
+    const print = fingerprint(root.firstElementChild, root);
+    draw('<input value="hello world">', root);
+    expect(restore(print, root)).toBe(root.firstElementChild);
+    expect(document.activeElement).toBe(root.firstElementChild);
+    expect(selection(root.firstElementChild)).toEqual([2, 5, "backward"]);
+  });
+
+  it("cuts the caret to a shorter new value", () => {
+    const root = draw('<textarea aria-label="Note">hello world</textarea>');
+    (root.firstElementChild as HTMLTextAreaElement).setSelectionRange(8, 11, "forward");
+    const print = fingerprint(root.firstElementChild, root);
+    draw('<textarea aria-label="Note">hello</textarea>', root);
+    restore(print, root);
+    expect(selection(root.firstElementChild)).toEqual([5, 5, "forward"]);
+  });
+
+  it("leaves the selection of the recorded element alone", () => {
+    const root = draw('<input value="hello world">');
+    const input = root.firstElementChild as HTMLInputElement;
+    input.setSelectionRange(2, 5, "backward");
+    const print = fingerprint(input, root);
+    input.setSelectionRange(0, 1, "forward");
+    expect(restore(print, root)).toBe(input);
+    expect(selection(input)).toEqual([0, 1, "forward"]);
+  });
+
+  it("focuses an input with no caret without throwing", () => {
+    const root = draw('<input type="checkbox" aria-label="Done">');
+    const print = fingerprint(root.firstElementChild, root);
+    draw('<input type="checkbox" aria-label="Done">', root);
+    expect(restore(print, root)).toBe(root.firstElementChild);
+    expect(document.activeElement).toBe(root.firstElementChild);
+    // A text input drawn again as a number input, which throws on setSelectionRange.
+    draw('<input value="12">', root);
+    const typed = fingerprint(root.firstElementChild, root);
+    draw('<input type="number" value="12">', root);
+    expect(restore(typed, root)).toBe(root.firstElementChild);
+    // A browser that throws on reading selectionStart.
+    Object.defineProperty(root.firstElementChild, "selectionStart", { get: () => { throw new DOMException("", "InvalidStateError"); } });
+    expect(fingerprint(root.firstElementChild, root)).toBeDefined();
+  });
+
+  it("returns undefined, and focuses nothing, when the element is gone", () => {
+    const root = draw("<input>");
+    const print = fingerprint(root.firstElementChild, root);
+    draw("<p>Empty</p>", root);
+    expect(restore(print, root)).toBeUndefined();
+    expect(document.activeElement).toBe(document.body);
   });
 });
