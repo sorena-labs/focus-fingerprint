@@ -27,7 +27,7 @@ A pull request:
 
 ## Releases
 
-Maintainers move the "Unreleased" lines under a new `## X.Y.Z` heading, bump `version` in `package.json`, push the commit, then tag it `vX.Y.Z` and push the tag. The Release workflow turns that version's changelog lines into the GitHub release notes, and fails if the heading is missing. Then publish to npm.
+Maintainers move the "Unreleased" lines under a new `## X.Y.Z - YYYY-MM-DD` heading, bump `version` in `package.json`, push the commit, then tag it `vX.Y.Z` and push the tag. The Release workflow turns that version's changelog lines into the GitHub release notes, and fails if the heading is missing. Then publish to npm.
 
 ## Conduct
 
