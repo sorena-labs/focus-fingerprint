@@ -27,7 +27,7 @@ A pull request:
 
 ## Releases
 
-Maintainers move the "Unreleased" lines under a new `## X.Y.Z` heading, bump `version` in `package.json`, push the commit, then tag it `vX.Y.Z` and push the tag. The Release workflow does the rest, and stops at the first step that fails:
+Maintainers move the "Unreleased" lines under a new `## X.Y.Z - YYYY-MM-DD` heading, bump `version` in `package.json`, push the commit, then tag it `vX.Y.Z` and push the tag. The Release workflow does the rest, and stops at the first step that fails:
 
 1. checks the tag matches `version` in `package.json`,
 2. writes the release notes from that version's changelog lines, and fails if the heading is missing,

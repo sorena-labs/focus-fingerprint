@@ -4,7 +4,7 @@ Every release, newest first. Versions follow [semantic versioning](https://semve
 
 ## Unreleased
 
-## 0.1.0
+## 0.1.0 - 2026-11-03
 
 - `fingerprint(el, root, options?)` records an element inside a root: the element, its id, its index path, its tag and its name.
 - `find(print, root)` returns that element while it is still there, or else the element that replaced it, found by id or by place with the same tag and name. `undefined` when it is gone.
