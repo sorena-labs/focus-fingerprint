@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-labelledby="title desc">
+  <title id="title">focus-fingerprint</title>
+  <desc id="desc">A list with focus on one row's button. The list is drawn again with a new row above it, and focus is back on the same button.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1020"/>
+      <stop offset="1" stop-color="#151C3A"/>
+    </linearGradient>
+    <clipPath id="clip-a"><rect x="640" y="96" width="236" height="248" rx="16"/></clipPath>
+    <clipPath id="clip-b"><rect x="964" y="96" width="236" height="248" rx="16"/></clipPath>
+    <marker id="head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M1 1 L9 5 L1 9" fill="none" stroke="#5A6690" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <g id="ridges" fill="none" stroke="#FFC24B" stroke-linecap="round">
+      <ellipse rx="40" ry="27" stroke-width="2" stroke-dasharray="46 9 20 12" opacity=".45"/>
+      <ellipse rx="54" ry="38" stroke-width="2" stroke-dasharray="64 11 28 14" opacity=".28"/>
+      <ellipse rx="68" ry="49" stroke-width="2" stroke-dasharray="80 13 34 16" opacity=".15"/>
+    </g>
+  </defs>
+  <style>
+    .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  </style>
+
+  <rect width="1280" height="420" rx="24" fill="url(#bg)"/>
+
+  <!-- Wordmark, tagline, facts -->
+  <text x="72" y="158" class="sans" font-size="56" font-weight="700" letter-spacing="-1.2"><tspan fill="#F2F4FA">focus-</tspan><tspan fill="#FFC24B">fingerprint</tspan></text>
+  <text class="sans" font-size="24" fill="#B4BCD6">
+    <tspan x="72" y="210">Keep focus where it was when a list,</tspan>
+    <tspan x="72" y="242">panel or page is drawn again.</tspan>
+  </text>
+  <g class="sans" font-size="16" fill="#D5DAEA">
+    <rect x="72" y="282" width="140" height="34" rx="17" fill="#121933" stroke="#2E3960"/>
+    <text x="142" y="304" text-anchor="middle">0 dependencies</text>
+    <rect x="224" y="282" width="156" height="34" rx="17" fill="#121933" stroke="#2E3960"/>
+    <text x="302" y="304" text-anchor="middle">&lt; 1.5 KB gzipped</text>
+    <rect x="392" y="282" width="134" height="34" rx="17" fill="#121933" stroke="#2E3960"/>
+    <text x="459" y="304" text-anchor="middle">any framework</text>
+  </g>
+  <text x="72" y="376" class="mono" font-size="17" fill="#7D88AB"><tspan fill="#FFC24B">$</tspan> npm install focus-fingerprint</text>
+
+  <!-- Before: focus on the second row's button -->
+  <text x="640" y="80" class="mono" font-size="14" letter-spacing="2" fill="#7D88AB">BEFORE</text>
+  <rect x="640" y="96" width="236" height="248" rx="16" fill="#151C36" stroke="#2A3458"/>
+  <g fill="#1C2444">
+    <rect x="656" y="112" width="204" height="44" rx="10"/>
+    <rect x="656" y="168" width="204" height="44" rx="10"/>
+    <rect x="656" y="224" width="204" height="44" rx="10"/>
+    <rect x="656" y="280" width="204" height="44" rx="10"/>
+  </g>
+  <g fill="#3A4570">
+    <rect x="672" y="128" width="96" height="12" rx="6"/>
+    <rect x="672" y="240" width="84" height="12" rx="6"/>
+    <rect x="672" y="296" width="108" height="12" rx="6"/>
+  </g>
+  <rect x="672" y="184" width="120" height="12" rx="6" fill="#FFC24B" opacity=".55"/>
+  <g fill="#2A3458">
+    <rect x="802" y="122" width="44" height="24" rx="8"/>
+    <rect x="802" y="234" width="44" height="24" rx="8"/>
+    <rect x="802" y="290" width="44" height="24" rx="8"/>
+  </g>
+  <g clip-path="url(#clip-a)"><use href="#ridges" x="824" y="190"/></g>
+  <rect x="802" y="178" width="44" height="24" rx="8" fill="#3A4570"/>
+  <rect x="797" y="173" width="54" height="34" rx="12" fill="none" stroke="#FFC24B" stroke-width="3"/>
+
+  <!-- Redraw -->
+  <text x="920" y="206" class="mono" font-size="15" fill="#7D88AB" text-anchor="middle">redraw</text>
+  <line x1="890" y1="222" x2="948" y2="222" stroke="#5A6690" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#head)"/>
+
+  <!-- After: new nodes, a row inserted above, focus on the same button -->
+  <text x="964" y="80" class="mono" font-size="14" letter-spacing="2" fill="#7D88AB">AFTER</text>
+  <rect x="964" y="96" width="236" height="248" rx="16" fill="#151C36" stroke="#2A3458"/>
+  <rect x="980" y="112" width="204" height="44" rx="10" fill="#14283A" stroke="#3FD7A5" stroke-opacity=".6" stroke-dasharray="5 5"/>
+  <rect x="996" y="128" width="72" height="12" rx="6" fill="#3FD7A5" opacity=".45"/>
+  <rect x="1126" y="122" width="44" height="24" rx="8" fill="#1F3A48"/>
+  <g fill="#1C2444">
+    <rect x="980" y="168" width="204" height="44" rx="10"/>
+    <rect x="980" y="224" width="204" height="44" rx="10"/>
+    <rect x="980" y="280" width="204" height="44" rx="10"/>
+  </g>
+  <g fill="#3A4570">
+    <rect x="996" y="184" width="96" height="12" rx="6"/>
+    <rect x="996" y="296" width="84" height="12" rx="6"/>
+  </g>
+  <rect x="996" y="240" width="120" height="12" rx="6" fill="#FFC24B" opacity=".55"/>
+  <g fill="#2A3458">
+    <rect x="1126" y="178" width="44" height="24" rx="8"/>
+    <rect x="1126" y="290" width="44" height="24" rx="8"/>
+  </g>
+  <g clip-path="url(#clip-b)"><use href="#ridges" x="1148" y="246"/></g>
+  <rect x="1126" y="234" width="44" height="24" rx="8" fill="#3A4570"/>
+  <rect x="1121" y="229" width="54" height="34" rx="12" fill="none" stroke="#FFC24B" stroke-width="3"/>
+
+  <!-- The calls under each step -->
+  <text x="758" y="376" class="mono" font-size="16" fill="#B4BCD6" text-anchor="middle">fingerprint(el, list)</text>
+  <text x="1082" y="376" class="mono" font-size="16" fill="#FFC24B" text-anchor="middle">find(print, list)</text>
+</svg>
