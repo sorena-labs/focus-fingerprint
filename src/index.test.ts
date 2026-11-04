@@ -207,6 +207,46 @@ describe("find", () => {
       const print = fingerprint(button(root, "Two"), root);
       draw(rows("One", "Two"), root);
       expect(find(print, root, { fallback: true })).toBe(button(root, "Two"));
+      });
+    });
+
+  describe("with a key", () => {
+    const rows = (keys: string[]) => `<ul>${keys.map((k) => `<li data-key="${k}"><span>${k}</span><p><button>Edit</button></p></li>`).join("")}</ul>`;
+    const edit = (root: Element, key: string) => root.querySelector(`[data-key="${key}"] button`);
+
+    it("finds the row after a row is inserted above it", () => {
+      const root = draw(rows(["1", "2", "3"]));
+      const print = fingerprint(edit(root, "2"), root, { key: "data-key" });
+      draw(rows(["0", "1", "2", "3"]), root);
+      expect(find(print, root)).toBe(edit(root, "2"));
+    });
+
+    it("finds the row after the list is reordered", () => {
+      const root = draw(rows(["1", "2", "3"]));
+      const print = fingerprint(edit(root, "2"), root, { key: "data-key" });
+      draw(rows(["3", "1", "2"]), root);
+      expect(find(print, root)).toBe(edit(root, "2"));
+    });
+
+    it("refuses a key match with a different name, and falls back to the place", () => {
+      const root = draw('<ul><li data-key="a"><button>Open</button></li></ul>');
+      const print = fingerprint(root.querySelector("button"), root, { key: "data-key" });
+      draw('<ul><li><button>Open</button></li><li data-key="a"><button>Close</button></li></ul>', root);
+      expect(find(print, root)).toBe(root.querySelector("button"));
+    });
+
+    it("matches a key on the element itself, with characters a selector would need escaped", () => {
+      const root = draw(`<button data-key='say "hi" \\ 1'>Edit</button>`);
+      const print = fingerprint(root.firstElementChild, root, { key: "data-key" });
+      draw(`<button data-key="other">Edit</button><button data-key='say "hi" \\ 1'>Edit</button>`, root);
+      expect(find(print, root)).toBe(root.lastElementChild);
+    });
+
+    it("ignores an empty key", () => {
+      const root = draw('<ul><li><button>Edit</button></li><li data-key=""><button>Edit</button></li></ul>');
+      const print = fingerprint(root.querySelectorAll("button")[1], root, { key: "data-key" });
+      draw('<ul><li data-key=""><button>Edit</button></li><li><button>Edit</button></li></ul>', root);
+      expect(find(print, root)).toBe(root.querySelectorAll("button")[1]);
     });
   });
 
