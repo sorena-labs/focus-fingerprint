@@ -117,6 +117,51 @@ describe("find", () => {
     expect(find(print, null)).toBeUndefined();
   });
 
+  describe("with fallback", () => {
+    const rows = (...names: string[]) => `<ul>${names.map((name) => `<li><span>${name}</span><button>Delete ${name}</button></li>`).join("")}</ul>`;
+    const button = (root: Element, name: string) => [...root.querySelectorAll("button")].find((el) => el.textContent === `Delete ${name}`);
+
+    it("gives the next row when a middle row is deleted", () => {
+      const root = draw(rows("One", "Two", "Three"));
+      const print = fingerprint(button(root, "Two"), root);
+      draw(rows("One", "Three"), root);
+      expect(find(print, root)).toBeUndefined();
+      expect(find(print, root, { fallback: true })).toBe(button(root, "Three"));
+    });
+
+    it("gives the previous row when the last row is deleted", () => {
+      const root = draw(rows("One", "Two", "Three"));
+      const print = fingerprint(button(root, "Three"), root);
+      draw(rows("One", "Two"), root);
+      expect(find(print, root, { fallback: true })).toBe(button(root, "Two"));
+    });
+
+    it("gives root when the list is emptied", () => {
+      const root = draw(rows("One"));
+      const print = fingerprint(button(root, "One"), root);
+      draw(rows(), root);
+      expect(find(print, root, { fallback: true })).toBe(root);
+    });
+
+    it("skips rows that are inert or hidden from assistive technology", () => {
+      const root = draw(rows("One", "Two", "Three"));
+      const print = fingerprint(button(root, "Two"), root);
+      draw(rows("One", "Three"), root);
+      root.querySelectorAll("li")[1]!.setAttribute("aria-hidden", "true");
+      expect(find(print, root, { fallback: true })).toBe(button(root, "One"));
+      draw(rows("One", "Three"), root);
+      root.querySelectorAll("li")[1]!.setAttribute("inert", "");
+      expect(find(print, root, { fallback: true })).toBe(button(root, "One"));
+    });
+
+    it("still prefers the replaced element", () => {
+      const root = draw(rows("One", "Two"));
+      const print = fingerprint(button(root, "Two"), root);
+      draw(rows("One", "Two"), root);
+      expect(find(print, root, { fallback: true })).toBe(button(root, "Two"));
+    });
+  });
+
   it("uses the name function the fingerprint was taken with", () => {
     const root = draw('<button data-key="save">Save</button>');
     const name = (el: Element) => el.getAttribute("data-key") ?? "";
