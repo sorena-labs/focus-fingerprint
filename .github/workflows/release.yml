@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: write
-  # npm trusted publishing: npm swaps this OIDC token for a short-lived publish token, so no NPM_TOKEN secret.
+  # Signs the provenance statement. npm also tries trusted publishing with it first, then falls back to NPM_TOKEN.
   id-token: write
 
 jobs:
@@ -50,6 +50,8 @@ jobs:
       - name: Publish to npm
         run: npm publish --provenance --access public
         env:
+          # A granular npm token with write access to focus-fingerprint; setup-node's .npmrc reads it.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           # Verbose, so a failed trusted-publishing token exchange says why in the log.
           NPM_CONFIG_LOGLEVEL: verbose
       - name: Publish the release
