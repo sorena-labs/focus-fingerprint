@@ -43,12 +43,60 @@ describe("find", () => {
     expect(find(print, root)).toBe(root.lastElementChild);
   });
 
+  it("finds the id inside root when an earlier element outside it has the same id", () => {
+    draw('<button id="x">Open</button>');
+    const root = draw('<p></p><button id="x">Open</button>');
+    const print = fingerprint(root.lastElementChild, root);
+    draw('<button id="x">Open</button><p></p>', root);
+    expect(find(print, root)).toBe(root.firstElementChild);
+  });
+
+  it("finds a replaced element by its id inside a shadow root", () => {
+    const shadow = draw("").attachShadow({ mode: "open" });
+    const root = document.createElement("div");
+    shadow.append(root);
+    draw('<button id="x">Open</button>', root);
+    const print = fingerprint(root.firstElementChild, root);
+    draw('<p></p><button id="x">Open</button>', root);
+    expect(find(print, root)).toBe(root.lastElementChild);
+  });
+
   it("finds a replaced element in a new root", () => {
     const old = draw("<section><a href='#'>Next</a></section>");
     const print = fingerprint(old.querySelector("a"), old);
     old.remove();
     const root = draw("<section><a href='#'>Next</a></section>");
     expect(find(print, root)).toBe(root.querySelector("a"));
+  });
+
+  it("finds a replaced element when a row is added above it", () => {
+    const root = draw("<ul><li><button>One</button></li><li><button>Two</button></li></ul>");
+    const print = fingerprint(root.querySelectorAll("button")[1], root);
+    draw("<ul><li><button>New</button></li><li><button>One</button></li><li><button>Two</button></li></ul>", root);
+    expect(find(print, root)).toBe(root.querySelectorAll("button")[2]);
+  });
+
+  it("finds a replaced element when the list is sorted again", () => {
+    const root = draw("<ul><li><button>One</button></li><li><button>Two</button></li></ul>");
+    const print = fingerprint(root.querySelectorAll("button")[1], root);
+    draw("<ul><li><button>Two</button></li><li><button>One</button></li></ul>", root);
+    expect(find(print, root)).toBe(root.querySelectorAll("button")[0]);
+  });
+
+  it("refuses to guess when two elements elsewhere have the same tag and name", () => {
+    const root = draw("<ul><li><button>Edit</button></li><li><button>Edit</button></li></ul>");
+    const print = fingerprint(root.querySelector("button"), root);
+    draw("<ul><li><button>New</button></li><li><button>Edit</button></li><li><button>Edit</button></li></ul>", root);
+    expect(find(print, root)).toBeUndefined();
+  });
+
+  it("still prefers the id, then the place, over look-alikes elsewhere in root", () => {
+    const root = draw('<button id="a">Open</button><button>Open</button>');
+    const byId = fingerprint(root.firstElementChild, root);
+    const byPlace = fingerprint(root.lastElementChild, root);
+    draw('<button>Open</button><button>Open</button><button id="a">Open</button>', root);
+    expect(find(byId, root)).toBe(root.lastElementChild);
+    expect(find(byPlace, root)).toBe(root.children[1]);
   });
 
   it("refuses a different element at the same place", () => {
