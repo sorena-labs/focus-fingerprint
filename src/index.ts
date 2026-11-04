@@ -11,7 +11,8 @@ export interface FingerprintOptions {
 }
 
 interface Print {
-  el: Element;
+  /** Weak, so a stored fingerprint does not keep a replaced element, and the old page around it, in memory. */
+  el: WeakRef<Element>;
   id: string;
   path: number[];
   tag: string;
@@ -21,15 +22,15 @@ interface Print {
 
 const label = (el: Element) => (el.getAttribute("aria-label") ?? el.textContent ?? "").trim();
 
-/** Still on the page, inside root, and not hidden from people by `inert` or `aria-hidden="true"`. */
+/** Still on the page, inside root, not disabled, and not hidden from people by `inert` or `aria-hidden="true"`. */
 const usable = (el: Element | null | undefined, root: Element): el is HTMLElement | SVGElement =>
-  !!el && el.isConnected && root.contains(el) && !el.closest("[inert], [aria-hidden='true']");
+  !!el && el.isConnected && root.contains(el) && !el.matches(":disabled") && !el.closest("[inert], [aria-hidden='true']");
 
 const byId = (root: Element, id: string) => {
-  if (!root.isConnected) return undefined; // Nothing in it is usable.
+  if (!root.isConnected) return; // Nothing in it is usable.
   const hit = (root.getRootNode() as Document | ShadowRoot).getElementById(id);
   if (!hit || root.contains(hit)) return hit ?? undefined;
-  // The id is used earlier, outside root. Compared directly, so it needs no escaping.
+  // Also used earlier, outside root. Compared, so the id needs no escaping.
   for (const el of root.querySelectorAll("[id]")) if (el.id === id) return el;
 };
 
@@ -47,7 +48,7 @@ export function fingerprint(el: Element | null | undefined, root: Element | null
     path.push(i);
   }
   path.reverse();
-  const print: Print = { el, id: el.id, path, tag: el.tagName, name: nameOf(el), nameOf };
+  const print: Print = { el: new WeakRef(el), id: el.id, path, tag: el.tagName, name: nameOf(el), nameOf };
   return print as unknown as Fingerprint;
 }
 
@@ -59,7 +60,8 @@ export function fingerprint(el: Element | null | undefined, root: Element | null
 export function find(print: Fingerprint | undefined, root: Element | null | undefined): HTMLElement | SVGElement | undefined {
   const p = print as unknown as Print | undefined;
   if (!p || !root) return undefined;
-  if (usable(p.el, root)) return p.el;
+  const recorded = p.el.deref();
+  if (usable(recorded, root)) return recorded;
   const same = (el: Element | null | undefined) => (el && el.tagName === p.tag && p.nameOf(el) === p.name && usable(el, root) ? el : undefined);
   const hit = p.id ? same(byId(root, p.id)) : undefined;
   if (hit) return hit;
