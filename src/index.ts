@@ -54,8 +54,8 @@ export function fingerprint(el: Element | null | undefined, root: Element | null
 
 /**
  * The element a fingerprint recorded: the element itself while it is still usable inside root. Once it has been
- * replaced, the element in root with the same id, or else at the same index path, as long as its tag and name match.
- * Undefined when the element is really gone.
+ * replaced, the element in root with the same id, or else at the same index path, or else the only one in root, as long
+ * as its tag and name match. Undefined when the element is really gone, or look-alikes make it unclear.
  */
 export function find(print: Fingerprint | undefined, root: Element | null | undefined): HTMLElement | SVGElement | undefined {
   const p = print as unknown as Print | undefined;
@@ -67,5 +67,9 @@ export function find(print: Fingerprint | undefined, root: Element | null | unde
   if (hit) return hit;
   let at: Element | undefined = root;
   for (const i of p.path) at = at?.children[i];
-  return same(at);
+  const found = same(at);
+  if (found) return found;
+  // Last, anywhere in root, but never guess between look-alikes.
+  const [only, other] = [...root.querySelectorAll("*")].flatMap((el) => same(el) ?? []);
+  return other ? undefined : only;
 }
