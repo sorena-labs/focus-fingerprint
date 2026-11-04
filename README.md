@@ -60,7 +60,7 @@ Records `el`, which must be inside `root`. Returns a `Fingerprint`, whose conten
 
 Returns the recorded element, or `undefined`:
 
-1. The element itself, while it is still connected, inside `root`, and not under `inert` or `aria-hidden="true"`.
+1. The element itself, while it is still connected, inside `root`, not disabled, and not under `inert` or `aria-hidden="true"`. A disabled element (`:disabled`, which includes one inside a disabled `<fieldset>`) cannot take focus, so it does not count. One with `aria-disabled="true"` can, so it does.
 2. Otherwise the element in `root` with the same id, if it has the same tag and name and is usable.
 3. Otherwise the element at the same index path from `root`, if it has the same tag and name and is usable.
 
