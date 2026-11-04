@@ -4,9 +4,12 @@ Every release, newest first. Versions follow [semantic versioning](https://semve
 
 ## Unreleased
 
+## 0.3.0 - 2026-11-04
+
 - `options.key` names an attribute, such as `data-key`, that marks each row of a list. `find` looks for the row with the same key before it tries the index path, so the element is found again after rows are inserted, removed or reordered, even when every row has a button with the same name.
 - `find(print, root, { fallback: true })` returns the element nearest to where a gone element was, instead of `undefined`: the next item that moved into its place, else the one before it, then the same one level up, and finally `root`. It prefers an element that can take focus, or one inside it. Without the option `find` still returns `undefined`.
 - `restore(print, root)` focuses what `find` returns without scrolling. When an `<input>` or `<textarea>` was drawn again while someone typed, it also puts their caret and selection back, cut to the new value's length. `fingerprint` now records the caret and selection for this.
+- The published JavaScript is about 1.2 KB gzipped, up from 1 KB, to make room for these three.
 
 ## 0.2.0 - 2026-11-04
 
