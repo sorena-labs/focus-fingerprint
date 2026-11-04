@@ -51,6 +51,36 @@ describe("find", () => {
     expect(find(print, root)).toBe(root.querySelector("a"));
   });
 
+  it("finds a replaced element when a row is added above it", () => {
+    const root = draw("<ul><li><button>One</button></li><li><button>Two</button></li></ul>");
+    const print = fingerprint(root.querySelectorAll("button")[1], root);
+    draw("<ul><li><button>New</button></li><li><button>One</button></li><li><button>Two</button></li></ul>", root);
+    expect(find(print, root)).toBe(root.querySelectorAll("button")[2]);
+  });
+
+  it("finds a replaced element when the list is sorted again", () => {
+    const root = draw("<ul><li><button>One</button></li><li><button>Two</button></li></ul>");
+    const print = fingerprint(root.querySelectorAll("button")[1], root);
+    draw("<ul><li><button>Two</button></li><li><button>One</button></li></ul>", root);
+    expect(find(print, root)).toBe(root.querySelectorAll("button")[0]);
+  });
+
+  it("refuses to guess when two elements elsewhere have the same tag and name", () => {
+    const root = draw("<ul><li><button>Edit</button></li><li><button>Edit</button></li></ul>");
+    const print = fingerprint(root.querySelector("button"), root);
+    draw("<ul><li><button>New</button></li><li><button>Edit</button></li><li><button>Edit</button></li></ul>", root);
+    expect(find(print, root)).toBeUndefined();
+  });
+
+  it("still prefers the id, then the place, over look-alikes elsewhere in root", () => {
+    const root = draw('<button id="a">Open</button><button>Open</button>');
+    const byId = fingerprint(root.firstElementChild, root);
+    const byPlace = fingerprint(root.lastElementChild, root);
+    draw('<button>Open</button><button>Open</button><button id="a">Open</button>', root);
+    expect(find(byId, root)).toBe(root.lastElementChild);
+    expect(find(byPlace, root)).toBe(root.children[1]);
+  });
+
   it("refuses a different element at the same place", () => {
     const root = draw("<button>Open</button>");
     const print = fingerprint(root.firstElementChild, root);
