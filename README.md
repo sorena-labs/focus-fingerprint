@@ -4,7 +4,7 @@ Find the element that had focus again after its part of the page is drawn again.
 
 When a screen, a list or a panel is drawn again (a router swaps it, a keyed component remounts, a list is fetched again), the element that had focus is replaced by a new node. Code that stored the old node to give focus back finds it detached, focus falls to the `body`, and keyboard and screen reader users lose their place.
 
-`fingerprint` records the element, its id, where it sits inside a root, its tag and its name. `find` returns the element itself while it is still there, or else the new element in the same place with the same tag and name. No dependencies, under 1 KB gzipped.
+`fingerprint` records the element, its id, where it sits inside a root, its tag and its name. `find` returns the element itself while it is still there, or else the new element in the same place with the same tag and name. No dependencies, under 1.5 KB gzipped.
 
 ## Install
 
