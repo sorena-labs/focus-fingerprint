@@ -5,6 +5,7 @@ Every release, newest first. Versions follow [semantic versioning](https://semve
 ## Unreleased
 
 - `options.key` names an attribute, such as `data-key`, that marks each row of a list. `find` looks for the row with the same key before it tries the index path, so the element is found again after rows are inserted, removed or reordered, even when every row has a button with the same name.
+- `find(print, root, { fallback: true })` returns the element nearest to where a gone element was, instead of `undefined`: the next item that moved into its place, else the one before it, then the same one level up, and finally `root`. It prefers an element that can take focus, or one inside it. Without the option `find` still returns `undefined`.
 
 ## 0.2.0 - 2026-11-04
 
