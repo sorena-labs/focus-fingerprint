@@ -16,6 +16,15 @@ export interface FingerprintOptions {
   key?: string;
 }
 
+export interface FindOptions {
+  /**
+   * When nothing matches, return the nearest element that can take focus, or holds one, instead: from the
+   * deepest level of its index path that is still there up to root, the sibling now at its old index, then the one
+   * before it. Else root itself.
+   */
+  fallback?: boolean;
+}
+
 interface Print {
   /** Weak, so a stored fingerprint does not keep a replaced element, and the old page around it, in memory. */
   el: WeakRef<Element>;
@@ -37,6 +46,8 @@ const label = (el: Element) => (el.getAttribute("aria-label") ?? el.textContent 
 /** Still on the page, inside root, not disabled, and not hidden from people by `inert` or `aria-hidden="true"`. */
 const usable = (el: Element | null | undefined, root: Element): el is HTMLElement | SVGElement =>
   !!el && el.isConnected && root.contains(el) && !el.matches(":disabled") && !el.closest("[inert], [aria-hidden='true']");
+
+const focusable = "[tabindex], a[href], button, input, select, textarea";
 
 const byId = (root: Element, id: string) => {
   if (!root.isConnected) return; // Nothing in it is usable.
@@ -78,9 +89,9 @@ export function fingerprint(el: Element | null | undefined, root: Element | null
  * The element a fingerprint recorded: the element itself while it is still usable inside root. Once it has been
  * replaced, the element in root with the same id, or else under the same key, or else at the same index path, or else
  * the only one in root, as long as its tag and name match. Undefined when the element is really gone, or look-alikes
- * make it unclear.
+ * make it unclear, unless `options.fallback` is set.
  */
-export function find(print: Fingerprint | undefined, root: Element | null | undefined): HTMLElement | SVGElement | undefined {
+export function find(print: Fingerprint | undefined, root: Element | null | undefined, options: FindOptions = {}): HTMLElement | SVGElement | undefined {
   const p = print as unknown as Print | undefined;
   if (!p || !root) return undefined;
   const recorded = p.el.deref();
@@ -94,7 +105,15 @@ export function find(print: Fingerprint | undefined, root: Element | null | unde
   if (found) return found;
   // Last, anywhere in root, but never guess between look-alikes.
   const [only, other] = [...root.querySelectorAll("*")].flatMap((el) => same(el) ?? []);
-  return other ? undefined : only;
+  const alike = other ? undefined : only;
+  if (alike || !options.fallback) return alike;
+  // Deepest level first: the sibling now at the old index, then the one before it, or an element inside either.
+  for (let k = p.path.length; k--; ) {
+    const at = walk(root, p.path.slice(0, k));
+    for (const el of [at?.children[p.path[k]!], at?.children[p.path[k]! - 1]])
+      for (const c of el ? [el, ...el.querySelectorAll(focusable)] : []) if (c.matches(focusable) && usable(c, root)) return c;
+  }
+  return usable(root, root) ? root : undefined;
 }
 
 /**

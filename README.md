@@ -4,7 +4,7 @@ Find the element that had focus again after its part of the page is drawn again.
 
 When a screen, a list or a panel is drawn again (a router swaps it, a keyed component remounts, a list is fetched again), the element that had focus is replaced by a new node. Code that stored the old node to give focus back finds it detached, focus falls to the `body`, and keyboard and screen reader users lose their place.
 
-`fingerprint` records the element, its id, its row's key, where it sits inside a root, its tag and its name. `find` returns the element itself while it is still there, or else the new element in the same place with the same tag and name. `restore` focuses it and, for an input or textarea, puts the caret back where it was. No dependencies, under 1 KB gzipped.
+`fingerprint` records the element, its id, its row's key, where it sits inside a root, its tag and its name. `find` returns the element itself while it is still there, or else the new element in the same place with the same tag and name. `restore` focuses it and, for an input or textarea, puts the caret back where it was. No dependencies, under 1.5 KB gzipped.
 
 ## Install
 
@@ -25,7 +25,7 @@ const opener = fingerprint(document.activeElement, panel);
 (find(opener, panel) ?? panel.querySelector("h1"))?.focus({ preventScroll: true });
 ```
 
-`find` returns `undefined` when the element is really gone, so you choose the fallback: a heading, the panel itself, or the next item in a list.
+`find` returns `undefined` when the element is really gone, so you choose the fallback, such as a heading or the panel itself. Or pass `{ fallback: true }` to get the element nearest to where it was, the way focus moves to the next row when a row is deleted.
 
 When the element is a text field that is drawn again while someone types, use `restore` instead, so the caret and selection come back too:
 
@@ -51,7 +51,8 @@ const refresh = async () => {
 };
 
 useLayoutEffect(() => {
-  find(opener.current, list.current)?.focus({ preventScroll: true });
+  // A row that is gone gives its neighbour, or the list itself (give it tabindex="-1") once the list is empty.
+  find(opener.current, list.current, { fallback: true })?.focus({ preventScroll: true });
   opener.current = undefined;
 }, [rows]);
 ```
@@ -69,7 +70,7 @@ Records `el`, which must be inside `root`. Returns a `Fingerprint`, whose conten
 
 For an `<input>` or `<textarea>`, it also records the caret and selection: `selectionStart`, `selectionEnd` and `selectionDirection`. An input with no caret, such as a checkbox, records none.
 
-### `find(print, root)`
+### `find(print, root, options?)`
 
 Returns the recorded element, or `undefined`:
 
@@ -77,7 +78,10 @@ Returns the recorded element, or `undefined`:
 2. Otherwise the element in `root` with the same id, if it has the same tag and name and is usable.
 3. Otherwise, with `options.key`, the element at the same index path from the row in `root` with the same key, if it has the same tag and name and is usable.
 4. Otherwise the element at the same index path from `root`, if it has the same tag and name and is usable.
-5. Otherwise the only usable element anywhere in `root` with the same tag and name, so a row added above it or a list sorted again still finds it. When two or more match, `find` does not guess and returns `undefined`.
+5. Otherwise the only usable element anywhere in `root` with the same tag and name, so a row added above it or a list sorted again still finds it. When two or more match, `find` does not guess.
+6. Otherwise, only when `options.fallback` is `true`, the element nearest to where it was. From the deepest level of the old index path that is still there up to `root`, it tries the sibling now at the old index (the next item, moved up), then the one before it (for when the old item was last). For each in turn, it returns the sibling itself if it is usable and can take focus, or else the first usable element inside it that can. Else `root` itself, if it is usable.
+
+An element can take focus here when it has a `tabindex`, or is a link with an `href`, a button, an input, a select or a textarea.
 
 `root` may be the same node as before or a new one. The name is read with the same function the fingerprint was taken with.
 
