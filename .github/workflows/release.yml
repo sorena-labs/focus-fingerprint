@@ -49,6 +49,9 @@ jobs:
       - run: npm run build
       - name: Publish to npm
         run: npm publish --provenance --access public
+        env:
+          # Verbose, so a failed trusted-publishing token exchange says why in the log.
+          NPM_CONFIG_LOGLEVEL: verbose
       - name: Publish the release
         run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
         env:
