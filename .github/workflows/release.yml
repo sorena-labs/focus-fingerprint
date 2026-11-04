@@ -16,7 +16,8 @@ jobs:
       - name: Write the notes from the changelog
         run: |
           version="${GITHUB_REF_NAME#v}"
-          awk -v heading="## $version" '$0 == heading { on = 1; next } /^## / { on = 0 } on' CHANGELOG.md | sed '/./,$!d' > notes.md
+          # Headings read "## X.Y.Z - YYYY-MM-DD"; only the version field has to match.
+          awk -v version="$version" '$1 == "##" && $2 == version { on = 1; next } /^## / { on = 0 } on' CHANGELOG.md | sed '/./,$!d' > notes.md
           if [ ! -s notes.md ]; then
             echo "CHANGELOG.md has no lines under \"## $version\"." >&2
             exit 1
