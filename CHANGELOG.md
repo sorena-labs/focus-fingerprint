@@ -4,6 +4,8 @@ Every release, newest first. Versions follow [semantic versioning](https://semve
 
 ## Unreleased
 
+- `options.key` names an attribute, such as `data-key`, that marks each row of a list. `find` looks for the row with the same key before it tries the index path, so the element is found again after rows are inserted, removed or reordered, even when every row has a button with the same name.
+
 ## 0.2.0 - 2026-11-04
 
 - `find` no longer returns a disabled element, which cannot take focus, so your fallback runs instead of focus falling to the `body`. An element with `aria-disabled="true"` is still returned.
