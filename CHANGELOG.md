@@ -4,6 +4,7 @@ Every release, newest first. Versions follow [semantic versioning](https://semve
 
 ## Unreleased
 
+- `options.key` names an attribute, such as `data-key`, that marks each row of a list. `find` looks for the row with the same key before it tries the index path, so the element is found again after rows are inserted, removed or reordered, even when every row has a button with the same name.
 - `restore(print, root)` focuses what `find` returns without scrolling. When an `<input>` or `<textarea>` was drawn again while someone typed, it also puts their caret and selection back, cut to the new value's length. `fingerprint` now records the caret and selection for this.
 
 ## 0.2.0 - 2026-11-04
