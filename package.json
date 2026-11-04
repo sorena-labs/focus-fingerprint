@@ -1,6 +1,6 @@
 {
   "name": "focus-fingerprint",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Find the element that had focus again after its part of the page is drawn again, so focus can go back to it instead of falling to the body.",
   "keywords": [
     "focus",
@@ -32,7 +32,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json --removeComments && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.build.json --removeComments --declaration false",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"

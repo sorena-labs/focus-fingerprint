@@ -64,7 +64,8 @@ Returns the recorded element, or `undefined`:
 1. The element itself, while it is still connected, inside `root`, not disabled, and not under `inert` or `aria-hidden="true"`. A disabled element (`:disabled`, which includes one inside a disabled `<fieldset>`) cannot take focus, so it does not count. One with `aria-disabled="true"` can, so it does.
 2. Otherwise the element in `root` with the same id, if it has the same tag and name and is usable.
 3. Otherwise the element at the same index path from `root`, if it has the same tag and name and is usable.
-4. Otherwise, only when `options.fallback` is `true`, the element nearest to where it was. From the deepest level of the old index path that is still there up to `root`, it tries the sibling now at the old index (the next item, moved up), then the one before it (for when the old item was last). For each in turn, it returns the sibling itself if it is usable and can take focus, or else the first usable element inside it that can. Else `root` itself, if it is usable.
+4. Otherwise the only usable element anywhere in `root` with the same tag and name, so a row added above it or a list sorted again still finds it. When two or more match, `find` does not guess.
+5. Otherwise, only when `options.fallback` is `true`, the element nearest to where it was. From the deepest level of the old index path that is still there up to `root`, it tries the sibling now at the old index (the next item, moved up), then the one before it (for when the old item was last). For each in turn, it returns the sibling itself if it is usable and can take focus, or else the first usable element inside it that can. Else `root` itself, if it is usable.
 
 An element can take focus here when it has a `tabindex`, or is a link with an `href`, a button, an input, a select or a textarea.
 
