@@ -36,6 +36,14 @@ const label = (el: Element) => (el.getAttribute("aria-label") ?? el.textContent 
 const usable = (el: Element | null | undefined, root: Element): el is HTMLElement | SVGElement =>
   !!el && el.isConnected && root.contains(el) && !el.matches(":disabled") && !el.closest("[inert], [aria-hidden='true']");
 
+const byId = (root: Element, id: string) => {
+  if (!root.isConnected) return; // Nothing in it is usable.
+  const hit = (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+  if (!hit || root.contains(hit)) return hit ?? undefined;
+  // Also used earlier, outside root. Compared, so the id needs no escaping.
+  for (const el of root.querySelectorAll("[id]")) if (el.id === id) return el;
+};
+
 /**
  * Records an element inside root: the element itself, its id, its key, its index path from root, its tag and its name.
  * Undefined when there is no element, or it is root itself, or it is not inside root.
@@ -46,19 +54,23 @@ export function fingerprint(el: Element | null | undefined, root: Element | null
   const path: number[] = [];
   let row: Print["row"];
   for (let at = el; at !== root; at = at.parentElement!) {
+    // The first keyed element on the way up is the row. The path so far, reversed, leads from it to el.
     const key = !row && options.key && at.getAttribute(options.key);
-    if (key) row = [`[${CSS.escape(options.key!)}="${CSS.escape(key)}"]`, [...path]];
-    path.unshift([...at.parentElement!.children].indexOf(at));
+    if (key) row = [`[${CSS.escape(options.key!)}="${CSS.escape(key)}"]`, [...path].reverse()];
+    let i = 0;
+    for (let s = at.previousElementSibling; s; s = s.previousElementSibling) i++;
+    path.push(i);
   }
+  path.reverse();
   const print: Print = { el: new WeakRef(el), id: el.id, path, tag: el.tagName, name: nameOf(el), nameOf, row };
   return print as unknown as Fingerprint;
 }
 
 /**
  * The element a fingerprint recorded: the element itself while it is still usable inside root. Once it has been
- * replaced, the element in root with the same id, or else under the same key, or else at the same index path, as
- * long as its tag and name match.
- * Undefined when the element is really gone.
+ * replaced, the element in root with the same id, or else under the same key, or else at the same index path, or else
+ * the only one in root, as long as its tag and name match. Undefined when the element is really gone, or look-alikes
+ * make it unclear.
  */
 export function find(print: Fingerprint | undefined, root: Element | null | undefined): HTMLElement | SVGElement | undefined {
   const p = print as unknown as Print | undefined;
@@ -66,7 +78,13 @@ export function find(print: Fingerprint | undefined, root: Element | null | unde
   const recorded = p.el.deref();
   if (usable(recorded, root)) return recorded;
   const same = (el: Element | null | undefined) => (el && el.tagName === p.tag && p.nameOf(el) === p.name && usable(el, root) ? el : undefined);
-  // Compared directly, so an id needs no escaping, and only ids inside root count.
-  const byId = p.id ? [...root.querySelectorAll("[id]")].find((el) => el.id === p.id) : undefined;
-  return same(byId) ?? same(p.row && walk(root.querySelector(p.row[0]), p.row[1])) ?? same(walk(root, p.path));
+  const hit = p.id ? same(byId(root, p.id)) : undefined;
+  if (hit) return hit;
+  const keyed = same(p.row && walk(root.querySelector(p.row[0]), p.row[1]));
+  if (keyed) return keyed;
+  const found = same(walk(root, p.path));
+  if (found) return found;
+  // Last, anywhere in root, but never guess between look-alikes.
+  const [only, other] = [...root.querySelectorAll("*")].flatMap((el) => same(el) ?? []);
+  return other ? undefined : only;
 }

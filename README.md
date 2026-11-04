@@ -55,7 +55,7 @@ Records `el`, which must be inside `root`. Returns a `Fingerprint`, whose conten
 - `el`: `Element | null | undefined`, usually `document.activeElement`.
 - `root`: `Element | null | undefined`, the part of the page that will be drawn again.
 - `options.name`: `(el: Element) => string`, the name an element must keep to count as the same element. Defaults to its `aria-label`, or else its text, trimmed. Pass your own to match on something else, such as a `data-` attribute.
-- `options.key`: `string`, an attribute, such as `data-key`, that gives each row of a list a value that stays the same when the list is drawn again. The nearest element from `el` up to `root` with a non-empty value is the row. Without a key or an id, `find` has only the index path to go on, so a row inserted above, removed above or moved makes it miss the element, or return the same button in another row when every row's button has the same name. Keys should be unique inside `root`.
+- `options.key`: `string`, an attribute, such as `data-key`, that gives each row of a list a value that stays the same when the list is drawn again. The nearest element from `el` up to `root` with a non-empty value is the row. Without a key or an id, a row inserted above, removed above or moved can put another row's button with the same name at the recorded index path, and `find` returns that one. Keys should be unique inside `root`.
 
 ### `find(print, root)`
 
@@ -65,6 +65,7 @@ Returns the recorded element, or `undefined`:
 2. Otherwise the element in `root` with the same id, if it has the same tag and name and is usable.
 3. Otherwise, with `options.key`, the element at the same index path from the row in `root` with the same key, if it has the same tag and name and is usable.
 4. Otherwise the element at the same index path from `root`, if it has the same tag and name and is usable.
+5. Otherwise the only usable element anywhere in `root` with the same tag and name, so a row added above it or a list sorted again still finds it. When two or more match, `find` does not guess and returns `undefined`.
 
 `root` may be the same node as before or a new one. The name is read with the same function the fingerprint was taken with.
 
