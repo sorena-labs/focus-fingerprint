@@ -36,4 +36,4 @@ jobs:
             exit 1
           fi
       - name: Lint the package as npm will see it
-        run: npx --yes publint
+        run: npx --yes publint@0.3.25
