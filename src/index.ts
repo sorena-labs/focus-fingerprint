@@ -56,7 +56,7 @@ export function find(print: Fingerprint | undefined, root: Element | null | unde
   for (const i of p.path) at = at?.children[i];
   const found = same(byId) ?? same(at);
   if (found) return found;
-  // A new row above or a sort moves the path. Look anywhere, but never guess between look-alikes.
+  // Last, anywhere in root, but never guess between look-alikes.
   const [only, other] = [...root.querySelectorAll("*")].flatMap((el) => same(el) ?? []);
   return other ? undefined : only;
 }
