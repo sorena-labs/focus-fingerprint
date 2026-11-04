@@ -1,18 +1,35 @@
 name: Release
 
-# Every pushed version tag gets a GitHub release, with that version's lines from CHANGELOG.md as its notes.
+# Every pushed version tag is checked, tested, published to npm with provenance,
+# and then gets a GitHub release with that version's lines from CHANGELOG.md as its notes.
 on:
   push:
     tags: ["v*"]
 
 permissions:
   contents: write
+  # npm trusted publishing: npm swaps this OIDC token for a short-lived publish token, so no NPM_TOKEN secret.
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # Trusted publishing needs npm 11.5.1 or later, which Node 24 ships.
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          # No dependency cache: this job can publish, so it never restores a cache another workflow wrote.
+      - name: Check the tag matches package.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(node -p 'require("./package.json").version')"
+          if [ "$tag" != "$version" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match version $version in package.json." >&2
+            exit 1
+          fi
       - name: Write the notes from the changelog
         run: |
           version="${GITHUB_REF_NAME#v}"
@@ -26,6 +43,12 @@ jobs:
             echo
             echo "Install: \`npm install focus-fingerprint@$version\`"
           } >> notes.md
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Publish to npm
+        run: npm publish --provenance --access public
       - name: Publish the release
         run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
         env:
